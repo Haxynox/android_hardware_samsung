@@ -64,10 +64,6 @@ enum {
     PAGE_FLIP = 0x00000001,
 };
 
-struct fb_context_t {
-    framebuffer_device_t  device;
-};
-
 #ifdef USE_WFD
 static android::WfdVideoFbInput       *g_WfdVideoFbInput;
 #endif
@@ -455,7 +451,7 @@ int framebuffer_device_open(hw_module_t const* module, const char* name, hw_devi
     }
 
     /* initialize our state here */
-    fb_context_t *dev = (fb_context_t*)malloc(sizeof(*dev));
+    framebuffer_device_t *dev = new framebuffer_device_t();
     memset(dev, 0, sizeof(*dev));
 
     /* initialize the procs */
