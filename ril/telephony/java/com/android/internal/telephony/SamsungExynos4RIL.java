@@ -31,6 +31,8 @@ import android.telephony.PhoneNumberUtils;
 
 public class SamsungExynos4RIL extends RIL implements CommandsInterface {
 
+    private boolean setPreferredNetworkTypeSeen = false;
+
     //SAMSUNG STATES
     static final int RIL_REQUEST_GET_CELL_BROADCAST_CONFIG = 10002;
 
@@ -424,6 +426,12 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
         int response = p.readInt();
 
         switch(response) {
+            case RIL_UNSOL_RIL_CONNECTED:
+                if (!setPreferredNetworkTypeSeen) {
+                    Rlog.v(RILJ_LOG_TAG, "SamsungExynos4RIL: connected, setting network type to " + mPreferredNetworkType);
+                    setPreferredNetworkType(mPreferredNetworkType, null);
+                }
+                break;
             case RIL_UNSOL_STK_PROACTIVE_COMMAND: 
                 Object ret = responseString(p);
                 if (RILJ_LOGD) unsljLogRet(response, ret);
@@ -493,4 +501,16 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
         send(rr);
     }
 
+    @Override
+    public void setPreferredNetworkType(int networkType , Message response) {
+        riljLog("SamsungExynos4RIL: setPreferredNetworkType: " + networkType);
+
+        if (!setPreferredNetworkTypeSeen) {
+            riljLog("SamsungExynos4RIL: Need to reboot modem!");
+            setRadioPower(false, null);
+            setPreferredNetworkTypeSeen = true;
+        }
+
+        super.setPreferredNetworkType(networkType, response);
+    }
 }
