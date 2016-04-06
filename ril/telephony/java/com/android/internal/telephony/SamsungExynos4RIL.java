@@ -23,6 +23,7 @@ import android.os.AsyncResult;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcel;
+import android.telephony.ModemActivityInfo;
 import android.os.Registrant;
 import android.telephony.Rlog;
 
