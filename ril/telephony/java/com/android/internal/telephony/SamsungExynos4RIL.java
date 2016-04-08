@@ -452,6 +452,16 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
         }
     }
 
+    private Object
+    responseFailCause(Parcel p) {
+        LastCallFailCause failCause = new LastCallFailCause();
+        failCause.causeCode = p.readInt();
+        if (p.dataAvail() > 0) {
+          failCause.vendorCause = p.readString();
+        }
+        return failCause;
+    }
+
     private void
     constructGsmSendSmsRilRequest (RILRequest rr, String smscPDU, String pdu) {
         rr.mParcel.writeInt(2);
