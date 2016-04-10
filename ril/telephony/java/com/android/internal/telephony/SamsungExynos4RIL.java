@@ -129,6 +129,14 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
             default: return RIL.requestToString(request);
         }
     }
+ 
+    static String
+    responseToString(int response) {
+        switch (response) {
+            case RIL_UNSOL_STK_SEND_SMS_RESULT: return "RIL_UNSOL_STK_SEND_SMS_RESULT";
+            default: return RIL.responseToString(response);
+        }
+    }
 
     @Override
     protected RILRequest
@@ -430,6 +438,15 @@ public class SamsungExynos4RIL extends RIL implements CommandsInterface {
                     mCatProCmdBuffer = ret;
                 }
                 break;
+            case RIL_UNSOL_STK_SEND_SMS_RESULT:
+                Object ret = responseInts(p); // Samsung STK
+                if (RILJ_LOGD) unsljLogRet(response, ret);
+
+                if (mCatSendSmsResultRegistrant != null) {
+                    mCatSendSmsResultRegistrant.notifyRegistrant(
+                            new AsyncResult (null, ret, null));
+                }
+            break;
 
             default:
                 // Rewind the Parcel
