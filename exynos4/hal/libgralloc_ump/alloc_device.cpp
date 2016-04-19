@@ -468,17 +468,18 @@ static int alloc_device_framework_alloc(alloc_device_t* dev, int w, int h, int f
         switch (format) {
         case HAL_PIXEL_FORMAT_YV12:
             stride = EXYNOS4_ALIGN(w, 16); //(w + 15) & ~15;
+            size = (stride * h) + (EXYNOS4_ALIGN(stride / 2, 16) * h);
             ALOGD("framework format YV12 used", __func__);
             break;
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
             stride = w;
+            size = stride * h * 3 / 2;
             ALOGD("framework format YCrCb_420_SP used");
             break;
         default:
             ALOGE("invalid yuv format %d\n", format);
             return -EINVAL;
         }
-    size = stride * h * 3 / 2;
 
     int err;
 
