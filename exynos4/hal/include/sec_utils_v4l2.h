@@ -84,6 +84,7 @@ inline int HAL_PIXEL_FORMAT_2_V4L2_PIX(int HAL_PIXEL_FORMAT)
         V4L2_PIX = V4L2_PIX_FMT_RGB565;
         break;
 
+    case HAL_PIXEL_FORMAT_CUSTOM_ARGB_8888:
     case HAL_PIXEL_FORMAT_BGRA_8888:
 #if defined(BOARD_USE_V4L2)
         V4L2_PIX = V4L2_PIX_FMT_BGR32;
@@ -279,6 +280,7 @@ inline unsigned int FRAME_SIZE(int HAL_PIXEL_FORMAT, int w, int h)
     case HAL_PIXEL_FORMAT_RGBA_8888:
     case HAL_PIXEL_FORMAT_BGRA_8888:
     case HAL_PIXEL_FORMAT_RGBX_8888:
+    case HAL_PIXEL_FORMAT_CUSTOM_ARGB_8888:
         frame_size = GET_32BPP_FRAME_SIZE(w, h);
         break;
 
