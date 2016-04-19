@@ -445,6 +445,58 @@ static int gralloc_alloc_framebuffer(alloc_device_t* dev, size_t size, int usage
     return err;
 }
 
+static int alloc_device_framework_alloc(alloc_device_t* dev, int w, int h, int format,
+                              int usage, buffer_handle_t* pHandle, int* pStride)
+{
+    int l_usage = usage;
+    int bpp = 0;
+
+    if (!pHandle || !pStride || w < 0 || h < 0)
+        return -EINVAL;
+
+    ALOGD_IF(debug_level > 0, "%s w=%d h=%d format=0x%x usage=0x%x", __func__, w, h, format, usage);
+
+    size_t size = 0;
+    size_t stride = 0;
+    size_t stride_raw = 0;
+
+        /* FIXME: there is no way to return the vstride */
+        int vstride=0;
+
+        vstride = EXYNOS4_ALIGN(h, 16); //(h + 15) & ~15;
+
+        switch (format) {
+        case HAL_PIXEL_FORMAT_YV12:
+            stride = EXYNOS4_ALIGN(w, 16); //(w + 15) & ~15;
+            ALOGD("framework format YV12 used", __func__);
+            break;
+        case HAL_PIXEL_FORMAT_YCrCb_420_SP:
+            stride = w;
+            ALOGD("framework format YCrCb_420_SP used");
+            break;
+        default:
+            ALOGE("invalid yuv format %d\n", format);
+            return -EINVAL;
+        }
+    size = stride * h * 3 / 2;
+
+    int err;
+
+    pthread_mutex_lock(&l_surface);
+    if (l_usage & GRALLOC_USAGE_HW_FB)
+        err = gralloc_alloc_framebuffer(dev, size, l_usage, pHandle, w, h, format, 32, stride);
+    else
+        err = gralloc_alloc_buffer(dev, size, l_usage, pHandle, w, h, format, 0, (int)stride_raw, (int)stride);
+
+    pthread_mutex_unlock(&l_surface);
+
+    if (err < 0)
+        return err;
+
+    *pStride = stride;
+    return 0;
+}
+
 static int alloc_device_alloc(alloc_device_t* dev, int w, int h, int format,
                               int usage, buffer_handle_t* pHandle, int* pStride)
 {
@@ -465,6 +517,8 @@ static int alloc_device_alloc(alloc_device_t* dev, int w, int h, int format,
         format == HAL_PIXEL_FORMAT_YCbCr_422_SP ||
         format == HAL_PIXEL_FORMAT_YCbCr_420_P  ||
         format == HAL_PIXEL_FORMAT_EXYNOS_YV12 ||
+        format == HAL_PIXEL_FORMAT_YV12 ||
+        format == HAL_PIXEL_FORMAT_YCrCb_420_SP ||
         format == HAL_PIXEL_FORMAT_CUSTOM_YCrCb_420_SP ||
         format == HAL_PIXEL_FORMAT_CUSTOM_YCbCr_420_SP_TILED ||
         format == GGL_PIXEL_FORMAT_L_8 ||
@@ -570,6 +624,9 @@ static int alloc_device_alloc(alloc_device_t* dev, int w, int h, int format,
                 size += PAGE_SIZE * 2;
 
             break;
+        case HAL_PIXEL_FORMAT_YV12:
+        case HAL_PIXEL_FORMAT_YCrCb_420_SP:
+            return alloc_device_framework_alloc(dev, w, h, format, usage, pHandle, pStride);
 
         default:
             return -EINVAL;
